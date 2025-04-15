@@ -1,6 +1,8 @@
 import crewai as crewai
 from textwrap import dedent
 from src.Agents.base_agent import BaseAgent
+from src.Helpers.athlete_profile import AthleteProfile
+from src.Helpers.fitbit_data import FitBitData
 
 
 class FitbitAgent(BaseAgent):
@@ -8,9 +10,9 @@ class FitbitAgent(BaseAgent):
     goal: str
     backstory: str
 
-    def __init__(self, **kwargs):
+    def __init__(self, athlete_profile:AthleteProfile, fitbit_data: FitBitData, **kwargs):
         role = """
-            You are the Analyst Agent.
+            You are the Fitbit Analyst Agent.
             """
     
         goal = """
@@ -30,13 +32,32 @@ class FitbitAgent(BaseAgent):
             **kwargs
         )
 
+        self.athlete_profile = athlete_profile
+        self.fitbit_data = fitbit_data
+
+
     def analyze_data(self): 
         # Preprocessing goes here
         return crewai.Task(
             description=dedent(f"""
-                Analyze the feedback from the user and summarize/distill important imformation for the other agents to provide
+                Analyze the feedback from the user and summarize/distill important information for the other agents to provide
                 personalized recommendations to the user's training program.
+                
+                    The player profile is as follows: {self.athlete_profile.get_player_profile()}
+                    The Fitbit data is as follows: {self.fitbit_data.get_fitbit_data()}
+                               
+
+                **The summary report should include:**
+                - **Performance Trends**: Identify strengths, weaknesses, and improvements over time.  
+                - **Biomechanical Analysis**: Highlight movement inefficiencies, imbalances, and injury risks.  
+                - **Training Effectiveness**: Assess the impact of workouts on performance metrics.  
+                - **Nutritional Insights**: Summarize dietary habits and potential adjustments for better recovery and energy.  
+                - **Recovery & Readiness**: Evaluate fatigue levels, sleep quality, and overall recovery status.  
+                - **Personalized Recommendations**: Provide actionable insights for training, conditioning, and nutrition.  
+
+                Ensure the analysis is **concise, data-driven, and tailored** to the athlete's sport and goals.  
+
             """),
             agent=self,
-            expected_output="Summary of key data points. Analysis of data."
+            expected_output="An age-appropriate summary of key data points and analysis of data."
         )        

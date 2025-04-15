@@ -1,22 +1,26 @@
 from rich.console import Console
 from rich.table import Table
-from rich.markdown import Markdown
-import json
-
-from rich.console import Console
-from rich.table import Table
-from rich.markdown import Markdown
 import json
 
 def display_crew_output(crew_output):
     console = Console()
 
+    # Check if crew_output is a string, parse it if necessary
+    if isinstance(crew_output, str):
+        try:
+            crew_output = json.loads(crew_output)
+        except json.JSONDecodeError:
+            console.print("[bold red]Error:[/bold red] crew_output is a string and not valid JSON.")
+            console.print(f"[bold yellow]Raw Output:[/bold yellow] {crew_output}")
+            return
+
     # GPT-4o pricing
-    INPUT_TOKEN_COST = 2.5/1e6   # Cost per input token in USD
-    OUTPUT_TOKEN_COST = 10.0/1e6 # Cost per output token in USD
+    INPUT_TOKEN_COST = 2.5 / 1e6   # Cost per input token in USD
+    OUTPUT_TOKEN_COST = 10.0 / 1e6 # Cost per output token in USD
 
     # Raw Output
-    console.print(f"[bold yellow]Raw Output:[/bold yellow] {crew_output.raw}\n")
+    if crew_output.raw:
+        console.print(f"[bold yellow]Raw Output:[/bold yellow] {crew_output.raw}\n")
 
     # JSON Output
     if crew_output.json_dict:
@@ -26,7 +30,7 @@ def display_crew_output(crew_output):
     # Pydantic Output
     if crew_output.pydantic:
         console.print("\n[bold underline]Pydantic Output:[/bold underline]")
-        console.print(crew_output.pydantic)
+        console.print(crew_output.pydantic_output)
     
     # Tasks Output
     console.print("\n[bold underline]Tasks Output:[/bold underline]")

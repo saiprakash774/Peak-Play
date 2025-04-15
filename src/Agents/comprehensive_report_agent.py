@@ -1,17 +1,28 @@
 import crewai as crewai
+import json
 from textwrap import dedent
 from src.Agents.base_agent import BaseAgent
+from src.Helpers.athlete_profile import AthleteProfile
 
 
 class ComprehensiveReportAgent(BaseAgent):
-    def __init__(self, **kwargs):
+    def __init__(self, athlete_profile: AthleteProfile, **kwargs):
         name="Coach Jackson - Performance Analyst"
-        role = """
-            You are a **Comprehensive Report Generator**, responsible for consolidating  
+        ap = athlete_profile.get_athlete_profile()  # Abbreviate dictionary access
+
+        role = f"""
+            You are a {ap['primary_sport']} **Comprehensive Report Generator** who also knows about {ap['secondary_sport']}, responsible for consolidating  
             and summarizing analysis from various expert agents into a **cohesive, well-structured report**.
+
+            You analyze player-specific data from an input file to create a **professional report**
             """
 
-        goal = """
+        goal = f"""
+
+            Analyze the player profile of {ap['athlete_name']}. They are a {ap['athlete_age']} year old {ap['sex']}.
+            They have a unique aspect of {ap['unique_aspect']} whose primary sport is {ap['primary_sport']} and 
+                whose secondary sport is {ap['secondary_sport']}.
+
             Collect, analyze, and integrate the findings from multiple experts—including biomechanics,  
             conditioning, nutrition, psychology, and more—into a single **clear, concise, and professional report**.
             """
@@ -29,6 +40,8 @@ class ComprehensiveReportAgent(BaseAgent):
             **kwargs
         )
 
+        self.athlete_profile = athlete_profile
+
     def compile_report(self):
         """ Takes the outputs from all agents and combines them into a structured report. """
         
@@ -38,7 +51,9 @@ class ComprehensiveReportAgent(BaseAgent):
                                
                 **You have access to the full discussion history and analysis from all agents.**
                 Use this information to **synthesize all the findings** into a **comprehensive and structured report**  
-                that is **readable, insightful, and actionable**.                
+                that is **readable, insightful, and actionable**.
+
+                Analyze the following athlete profile data and generate a comprehensive report:                
 
                 **Your report should include:**
                 - **Executive Summary**: A high-level overview of key insights.
@@ -49,8 +64,8 @@ class ComprehensiveReportAgent(BaseAgent):
                 - **Injury Prevention & Physiology**: Advice on preventing injuries and improving endurance.
                 - **Position-Specific Coaching**: Tactical improvements based on the athlete’s role.
                 
-                Ensure the report is **professional, structured, and formatted for easy reading**.
+                **professional, structured, and formatted for easy reading**.
             """),
             agent=self,
-            expected_output="A professionally formatted comprehensive report summarizing all agent insights."
+            expected_output="A professionally formatted comprehensive report summarizing all agent insights. Do not include the athlete profile data in the output."
         )

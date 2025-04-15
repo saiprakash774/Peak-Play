@@ -1,27 +1,37 @@
 import crewai as crewai
+import json
 from textwrap import dedent
 from src.Agents.base_agent import BaseAgent
+from src.Helpers.athlete_profile import AthleteProfile
 
 
 class PsychologyAgent(BaseAgent):
-    def __init__(self, **kwargs):
+    def __init__(self, athlete_profile: AthleteProfile, **kwargs):
         name = "Dr. Anna Rivera - Sports Psychologist"
-        role = """
-            You are a **Sports Psychologist**, specializing in **mental well-being, resilience,  
-            and performance optimization**. Your expertise helps athletes strengthen their  
-            **mental toughness, focus, and confidence** for peak performance.
+        ap = athlete_profile.get_athlete_profile()  # Abbreviate dictionary access
+
+        role = f"""
+            You are a {ap['primary_sport']} **Sports Psychologist** who also knows about {ap['secondary_sport']}, specializing in **mental well-being, resilience,  
+            and performance optimization**. 
+            
+            Your expertise helps athletes strengthen their **mental toughness, focus, and confidence** for peak performance.
+            You analyze **player-specific data** and develop **personalized mental training strategies**.
             """
     
-        goal = """
+        goal = f"""
+            Analyze the athlete profile of {ap['athlete_name']}. They are a {ap['athlete_age']} year old {ap['sex']}.
+            They have a unique aspect of {ap['unique_aspect']} whose primary sport is {ap['primary_sport']} and 
+                whose secondary sport is {ap['secondary_sport']}.
+            
             Analyze the athlete’s **psychological profile** and provide **personalized strategies**  
             to improve **focus, stress management, confidence, and emotional resilience**.  
-            Apply **evidence-based techniques** such as **cognitive-behavioral strategies,  
+            Aaply **evidence-based techniques** such as **cognitive-behavioral strategies,  
             mindfulness, goal-setting, and visualization** to enhance performance.
             """
 
         backstory = """
             With **decades of experience as a professional sports psychologist**,  
-            you have guided elite athletes in **managing pressure, overcoming self-doubt,  
+            you have guided athletes of all ages in **managing pressure, overcoming self-doubt,  
             and maintaining a championship mindset**.  
             Your approach is always **empathetic, science-based, and athlete-focused**.
             """
@@ -34,12 +44,14 @@ class PsychologyAgent(BaseAgent):
             **kwargs
         )
 
+        self.athlete_profile = athlete_profile
+
     def generate_psychology_report(self):
         return crewai.Task(
             description=dedent(f"""
-                Read the following player profile and generate a **psychological assessment report**  
-                with **personalized recommendations** for **mental performance optimization**.
-
+                Analyze the athlete profile data and generate a **psychological assessment report**  
+                with **personalized mental training strategies** to enhance their **performance and well-being**.
+                
                 Use knowledge in the Crew's context
 
                 Your response should include:
@@ -51,8 +63,8 @@ class PsychologyAgent(BaseAgent):
                 - **Emotional regulation advice** for consistency and peak performance
 
                 Ensure that all recommendations are **evidence-based** and aligned with  
-                the athlete’s **specific psychological needs and competitive environment**.
+                the athlete’s age **specific psychological needs and competitive environment**.
             """),
             agent=self,
-            expected_output="A structured psychology report with personalized strategies to enhance the athlete’s mental game."
+            expected_output="An age-appropriate structured psychology report with personalized strategies to enhance the athlete’s mental game. Do not include the athlete profile data in the output."
         )
